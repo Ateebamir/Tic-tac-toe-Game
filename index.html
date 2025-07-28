@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe Game</title>
+  <link rel="stylesheet" href="style.css">
+  
+</head>
+<body>
+<!-- Start Screen -->
+<div id="start-screen">
+  <h2>Enter Player Info</h2>
+  <label>Player A Name: <input type="text" id="playerAName"></label><br><br>
+  <label>Choose Symbol:
+    <select id="playerASymbol">
+      <option value="X">X</option>
+      <option value="O">O</option>
+    </select>
+  </label><br><br>
+  <label>Player B Name: <input type="text" id="playerBName"></label><br><br>
+  <button id="start-btn">Start Game</button>
+</div>
+
+<!-- Game Area -->
+<div id="game-area" style="display: none;">
+  <h2 id="turn-info"></h2>
+  <div class="game">
+    <!-- 3x3 grid of game boxes -->
+    <button class="box" data-index="0"></button>
+    <button class="box" data-index="1"></button>
+    <button class="box" data-index="2"></button>
+    <button class="box" data-index="3"></button>
+    <button class="box" data-index="4"></button>
+    <button class="box" data-index="5"></button>
+    <button class="box" data-index="6"></button>
+    <button class="box" data-index="7"></button>
+    <button class="box" data-index="8"></button>
+  </div>
+  <div class="msg-container hide">
+    <p id="msg"></p>
+    <button id="new-btn">New Game</button>
+  </div>
+  <button id="reset-btn">Reset</button>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

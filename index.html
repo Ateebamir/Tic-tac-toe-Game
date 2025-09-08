@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tic Tac Toe — Boss Pro (Single Page)</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-layer"></div>
+
+  <main class="app">
+
+    <!-- START CARD (same page) -->
+    <section id="start-card" class="card center-card">
+      <h1 class="title">🔥 Tic Tac Toe — Battle Mode</h1>
+      <p class="subtitle">Play vs Friend — polished UI, subtle interactions</p>
+      <p class="quote">✨ Made pro by your boss 👑 — enjoy!</p>
+
+      <form id="startForm" class="form" onsubmit="return false;">
+        <label>
+          Your name
+          <input id="aName" type="text" placeholder="Player A (you)" />
+        </label>
+
+        <label>
+          Your symbol
+          <select id="aSym">
+            <option value="X">X</option>
+            <option value="O">O</option>
+          </select>
+        </label>
+
+        <label>
+          Friend's name
+          <input id="bName" type="text" placeholder="Player B (friend)" />
+        </label>
+
+        <div class="row">
+          <button id="startBtn" class="btn primary">🚀 Start Match</button>
+          <button id="demoBtn" class="btn ghost">Demo</button>
+        </div>
+      </form>
+      <small class="small-note">Light & smooth — no heavy animations.</small>
+    </section>
+
+    <!-- GAME CARD (hidden initially) -->
+    <section id="game-card" class="card game-card hidden" aria-live="polite">
+      <header class="top">
+        <div class="player">
+          <div id="labelA" class="name">Player A (X)</div>
+          <div id="scoreA" class="score">0</div>
+        </div>
+
+        <div id="turnInfo" class="turn">Waiting...</div>
+
+        <div class="player">
+          <div id="labelB" class="name">Player B (O)</div>
+          <div id="scoreB" class="score">0</div>
+        </div>
+      </header>
+
+      <div id="board" class="board" role="grid" aria-label="Tic tac toe board">
+        <button class="cell" data-i="0" aria-label="cell 1"></button>
+        <button class="cell" data-i="1" aria-label="cell 2"></button>
+        <button class="cell" data-i="2" aria-label="cell 3"></button>
+        <button class="cell" data-i="3" aria-label="cell 4"></button>
+        <button class="cell" data-i="4" aria-label="cell 5"></button>
+        <button class="cell" data-i="5" aria-label="cell 6"></button>
+        <button class="cell" data-i="6" aria-label="cell 7"></button>
+        <button class="cell" data-i="7" aria-label="cell 8"></button>
+        <button class="cell" data-i="8" aria-label="cell 9"></button>
+      </div>
+
+      <div class="controls">
+        <button id="resetBtn" class="btn ghost">Reset Board</button>
+        <button id="homeBtn" class="btn ghost">🏠 Home</button>
+      </div>
+
+      <div id="message" class="message hidden">
+        <div id="messageText" class="message-text"></div>
+        <div class="msg-actions">
+          <button id="playAgain" class="btn primary">Play Again</button>
+          <button id="newMatch" class="btn ghost">New Match</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer-note">Made pro by your boss 👑 — lightweight & smooth</footer>
+  </main>
+
+  <!-- confetti (optional, small CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

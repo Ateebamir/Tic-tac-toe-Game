@@ -1,189 +1,184 @@
-// game.js — single-page logic for index.html (start + game)
-document.addEventListener('DOMContentLoaded', () => {
-  // DOM: start
-  const startCard = document.getElementById('start-card');
-  const startBtn = document.getElementById('startBtn');
-  const demoBtn = document.getElementById('demoBtn');
-  const aNameIn = document.getElementById('aName');
-  const bNameIn = document.getElementById('bName');
-  const aSymIn = document.getElementById('aSym');
+import { useState, useEffect } from "react";
 
-  // DOM: game
-  const gameCard = document.getElementById('game-card');
-  const labelA = document.getElementById('labelA');
-  const labelB = document.getElementById('labelB');
-  const scoreAEl = document.getElementById('scoreA');
-  const scoreBEl = document.getElementById('scoreB');
-  const turnInfo = document.getElementById('turnInfo');
-  const boardEl = document.getElementById('board');
-  const cells = Array.from(document.querySelectorAll('.cell'));
-  const resetBtn = document.getElementById('resetBtn');
-  const homeBtn = document.getElementById('homeBtn');
-  const message = document.getElementById('message');
-  const messageText = document.getElementById('messageText');
-  const playAgain = document.getElementById('playAgain');
-  const newMatch = document.getElementById('newMatch');
+const initialBoard = Array(9).fill(null);
 
-  // state
-  let playerA = { name: 'Player A', symbol: 'X', score: 0 };
-  let playerB = { name: 'Player B', symbol: 'O', score: 0 };
-  let current = playerA;
-  let board = Array(9).fill(null);
-  let gameOver = false;
+export const TicTacToe = () => {
+  const [board, setBoard] = useState(initialBoard);
+  const [isXTurn, setIsXTurn] = useState(true);
+  const [mode, setMode] = useState("human");
+  const [winner, setWinner] = useState(null);
+  const [gameCounter, setGameCounter] = useState(1); // Tracks which game
 
-  const patterns = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
   ];
 
-  // audio (small WebAudio tones)
-  const AudioCtx = window.AudioContext || window.webkitAudioContext;
-  let audioCtx = null;
-  function ensureAudio(){ if (!audioCtx && AudioCtx) audioCtx = new AudioCtx(); }
-  function tone(type='click'){
-    if (!AudioCtx) return;
-    ensureAudio();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    if (type === 'click'){ o.type='square'; o.frequency.value=380; g.gain.value=0.02; }
-    if (type === 'win'){ o.type='triangle'; o.frequency.value=880; g.gain.value=0.04; }
-    if (type === 'draw'){ o.type='sine'; o.frequency.value=220; g.gain.value=0.03; }
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.18);
-    setTimeout(()=> o.stop(), 200);
-  }
-
-  // UI helpers
-  function showStart(){ startCard.classList.remove('hidden'); gameCard.classList.add('hidden'); }
-  function showGame(){ startCard.classList.add('hidden'); gameCard.classList.remove('hidden'); }
-
-  function refreshLabels(){
-    labelA.textContent = `${playerA.name} (${playerA.symbol})`;
-    labelB.textContent = `${playerB.name} (${playerB.symbol})`;
-    scoreAEl.textContent = playerA.score;
-    scoreBEl.textContent = playerB.score;
-  }
-  function refreshTurn(){ turnInfo.textContent = `${current.name}'s turn (${current.symbol})`; }
-
-  function resetBoard(){
-    board.fill(null);
-    cells.forEach(c => { c.textContent = ''; c.classList.remove('X','O','disabled'); });
-    gameOver = false;
-    message.classList.add('hidden');
-    message.classList.remove('msg-win','msg-draw');
-  }
-
-  function checkWinner(){
-    for (let p of patterns){
-      const [a,b,c] = p;
-      if (board[a] && board[a] === board[b] && board[b] === board[c]) return { symbol: board[a], pattern: p };
+  const checkWinner = (newBoard) => {
+    for (let [a, b, c] of lines) {
+      if (
+        newBoard[a] &&
+        newBoard[a] === newBoard[b] &&
+        newBoard[a] === newBoard[c]
+      ) {
+        return newBoard[a];
+      }
     }
-    return null;
-  }
+    return newBoard.includes(null) ? null : "Draw";
+  };
 
-  function handleWin(symbol, pattern){
-    gameOver = true;
-    pattern.forEach(i => cells[i].classList.add('disabled'));
-    const winner = symbol === playerA.symbol ? playerA : playerB;
-    winner.score += 1;
-    refreshLabels();
-    messageText.textContent = `🏆 ${winner.name} wins! ${playerA.score} - ${playerB.score}`;
-    message.classList.remove('hidden');
-    message.classList.add('msg-win');
-    tone('win');
-    // small confetti
-    if (typeof confetti === 'function') confetti({ particleCount: 40, spread: 55, origin: { y: 0.6 }});
-  }
+  const handleClick = (index) => {
+    if (board[index] || winner) return;
 
-  function handleDraw(){
-    gameOver = true;
-    messageText.textContent = "It's a draw! 🤝";
-    message.classList.remove('hidden');
-    message.classList.add('msg-draw');
-    tone('draw');
-  }
+    const newBoard = [...board];
+    newBoard[index] = isXTurn ? "X" : "O";
+    setBoard(newBoard);
+    const result = checkWinner(newBoard);
+    if (result) {
+      setWinner(result);
+    } else {
+      setIsXTurn(!isXTurn);
 
-  function cellClick(i){
-    if (gameOver) return;
-    if (board[i]) return;
-    board[i] = current.symbol;
-    const el = cells[i];
-    el.textContent = current.symbol;
-    el.classList.add(current.symbol);
-    el.classList.add('disabled');
-    tone('click');
+      if (mode === "computer" && !isXTurn) {
+        setTimeout(() => {
+          computerMove(newBoard);
+        }, 300);
+      }
+    }
+  };
 
-    const res = checkWinner();
-    if (res){ handleWin(res.symbol, res.pattern); return; }
-    if (board.every(Boolean)){ handleDraw(); return; }
+  const computerMove = (currentBoard) => {
+    const emptyIndexes = currentBoard
+      .map((val, idx) => (val === null ? idx : null))
+      .filter((val) => val !== null);
 
-    current = (current === playerA) ? playerB : playerA;
-    refreshTurn();
-  }
+    let move;
 
-  // events
-  cells.forEach((c, idx) => {
-    c.addEventListener('click', () => cellClick(idx));
-    c.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && !gameOver) { e.preventDefault(); cellClick(idx); }});
-  });
+    // Game 1 and 2: Never lose
+    if (gameCounter % 3 !== 0) {
+      // Try to win or block
+      move = findBestMove(currentBoard);
+    } else {
+      // Game 3: Random move (can lose)
+      move = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+    }
 
-  startBtn.addEventListener('click', () => {
-    // read inputs
-    playerA.name = aNameIn.value.trim() || 'Player A';
-    playerB.name = bNameIn.value.trim() || 'Player B';
-    playerA.symbol = (aSymIn.value || 'X').toUpperCase();
-    playerB.symbol = playerA.symbol === 'X' ? 'O' : 'X';
-    playerA.score = 0; playerB.score = 0;
-    current = playerA.symbol === 'X' ? playerA : playerB;
+    const newBoard = [...currentBoard];
+    newBoard[move] = "O";
+    setBoard(newBoard);
+    const result = checkWinner(newBoard);
+    if (result) {
+      setWinner(result);
+    } else {
+      setIsXTurn(true);
+    }
+  };
 
-    refreshLabels();
-    refreshTurn();
-    resetBoard();
-    showGame();
-    tone('click');
-  });
+  // Basic AI: Win if possible, else block
+  const findBestMove = (board) => {
+    // Check if can win
+    for (let idx of board.keys()) {
+      if (!board[idx]) {
+        board[idx] = "O";
+        if (checkWinner(board) === "O") {
+          board[idx] = null;
+          return idx;
+        }
+        board[idx] = null;
+      }
+    }
 
-  demoBtn.addEventListener('click', () => {
-    aNameIn.value = 'You'; bNameIn.value = 'Friend'; aSymIn.value = 'X';
-    startBtn.click();
-    // simulate two quick moves
-    setTimeout(()=> cells[0].click(), 250);
-    setTimeout(()=> cells[4].click(), 500);
-  });
+    // Check if need to block X
+    for (let idx of board.keys()) {
+      if (!board[idx]) {
+        board[idx] = "X";
+        if (checkWinner(board) === "X") {
+          board[idx] = null;
+          return idx;
+        }
+        board[idx] = null;
+      }
+    }
 
-  resetBtn.addEventListener('click', () => {
-    resetBoard();
-    current = playerA.symbol === 'X' ? playerA : playerB;
-    refreshTurn();
-    tone('click');
-  });
+    // Else pick center if empty
+    if (!board[4]) return 4;
 
-  homeBtn.addEventListener('click', () => {
-    // go back to start (keep last names)
-    showStart();
-    tone('click');
-  });
+    // Else random
+    const emptyIndexes = board
+      .map((val, idx) => (val === null ? idx : null))
+      .filter((val) => val !== null);
+    return emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+  };
 
-  playAgain.addEventListener('click', () => {
-    resetBoard();
-    current = playerA.symbol === 'X' ? playerA : playerB;
-    refreshTurn();
-    tone('click');
-  });
+  const resetGame = () => {
+    setBoard(initialBoard);
+    setIsXTurn(true);
+    setWinner(null);
+    setGameCounter(gameCounter + 1); // Increment game counter
+  };
 
-  newMatch.addEventListener('click', () => {
-    // new match: back to start and clear scores
-    playerA.score = 0; playerB.score = 0;
-    refreshLabels();
-    showStart();
-    tone('click');
-  });
+  return (
+    <div className="flex flex-col items-center justify-center p-8">
+      <h2 className="text-3xl font-bold mb-6">Tic Tac Toe</h2>
 
-  // init UI
-  refreshLabels();
-  refreshTurn();
-  resetBoard();
-  showStart();
-});
+      {/* Mode Selection */}
+      <div className="mb-6 flex gap-4">
+        <button
+          onClick={() => {
+            resetGame();
+            setMode("human");
+          }}
+          className={`px-4 py-2 rounded-md ${
+            mode === "human" ? "bg-blue-500 text-white" : "bg-gray-300"
+          }`}
+        >
+          Human vs Human
+        </button>
+        <button
+          onClick={() => {
+            resetGame();
+            setMode("computer");
+          }}
+          className={`px-4 py-2 rounded-md ${
+            mode === "computer" ? "bg-blue-500 text-white" : "bg-gray-300"
+          }`}
+        >
+          Human vs Computer
+        </button>
+      </div>
+
+      {/* Board */}
+      <div className="grid grid-cols-3 gap-2">
+        {board.map((cell, idx) => (
+          <div
+            key={idx}
+            onClick={() => handleClick(idx)}
+            className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center text-2xl font-bold border border-gray-500 cursor-pointer hover:bg-gray-200"
+          >
+            {cell}
+          </div>
+        ))}
+      </div>
+
+      {/* Winner */}
+      {winner && (
+        <div className="mt-6 text-xl font-semibold">
+          {winner === "Draw" ? "It's a Draw!" : `${winner} Wins!`}
+        </div>
+      )}
+
+      <button
+        onClick={resetGame}
+        className="mt-6 px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+      >
+        Reset Game
+      </button>
+    </div>
+  );
+};

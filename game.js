@@ -25,6 +25,11 @@ const messageText = document.getElementById("messageText");
 const playAgain = document.getElementById("playAgain");
 const newMatch = document.getElementById("newMatch");
 
+// 🎵 Sounds
+const clickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3");
+const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
+const drawSound = new Audio("https://assets.mixkit.co/active_storage/sfx/1113/1113-preview.mp3");
+
 // Game State
 let playerA, playerB, symbolA, symbolB, vsComputer;
 let boardState = Array(9).fill("");
@@ -85,9 +90,11 @@ function updateTurnInfo(){
   // Disable board if it's computer's turn
   if(vsComputer && turn==="B"){
     cells.forEach(c => c.disabled = true);
-    setTimeout(() => computerMove(), 500);
+    setTimeout(() => computerMove(), 600);
   } else {
-    cells.forEach(c => c.disabled = false);
+    cells.forEach((c,i) => {
+      c.disabled = boardState[i] !== "";
+    });
   }
 }
 
@@ -116,6 +123,7 @@ cells.forEach(cell => {
 
     boardState[i] = turn==="A" ? symbolA : symbolB;
     cell.textContent = boardState[i];
+    clickSound.play(); // 🔊 sound on click
 
     const winner = checkWinner();
     if(winner){
@@ -134,9 +142,11 @@ function handleWinner(winner){
   gameActive = false;
   if(winner==="Draw"){
     messageText.textContent = "It's a Draw!";
+    drawSound.play(); // 🔊 draw sound
   } else {
     const winnerName = winner === symbolA ? playerA : playerB;
     messageText.textContent = `${winnerName} Wins! 🎉`;
+    winSound.play(); // 🔊 win sound
     if(winner===symbolA) scoreA++; else scoreB++;
     scoreAEl.textContent = scoreA;
     scoreBEl.textContent = scoreB;
@@ -151,6 +161,7 @@ function computerMove(){
   const move = empty[Math.floor(Math.random()*empty.length)];
   boardState[move] = symbolB;
   cells[move].textContent = symbolB;
+  clickSound.play(); // 🔊 computer click sound
 
   const winner = checkWinner();
   if(winner){

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tic Tac Toe — Boss Pro (Single Page)</title>
+  <title>Tic Tac Toe — Boss Pro</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -11,11 +11,10 @@
 
   <main class="app">
 
-    <!-- START CARD (same page) -->
+    <!-- START CARD -->
     <section id="start-card" class="card center-card">
       <h1 class="title">🔥 Tic Tac Toe — Battle Mode</h1>
-      <p class="subtitle">Play vs Friend — polished UI, subtle interactions</p>
-      <p class="quote">✨ Made pro by your boss 👑 — enjoy!</p>
+      <p class="subtitle">Play vs Friend or Computer — polished UI</p>
 
       <form id="startForm" class="form" onsubmit="return false;">
         <label>
@@ -32,6 +31,14 @@
         </label>
 
         <label>
+          Opponent type
+          <select id="opponentType">
+            <option value="human">Friend</option>
+            <option value="computer">Computer</option>
+          </select>
+        </label>
+
+        <label id="bNameLabel">
           Friend's name
           <input id="bName" type="text" placeholder="Player B (friend)" />
         </label>
@@ -44,7 +51,7 @@
       <small class="small-note">Light & smooth — no heavy animations.</small>
     </section>
 
-    <!-- GAME CARD (hidden initially) -->
+    <!-- GAME CARD -->
     <section id="game-card" class="card game-card hidden" aria-live="polite">
       <header class="top">
         <div class="player">
@@ -89,7 +96,6 @@
     <footer class="footer-note">Made pro by your boss 👑 — lightweight & smooth</footer>
   </main>
 
-  <!-- confetti (optional, small CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
   <script src="game.js"></script>
 </body>

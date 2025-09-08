@@ -31,6 +31,7 @@ let boardState = Array(9).fill("");
 let turn = "A";
 let scoreA = 0;
 let scoreB = 0;
+let gameActive = true;
 
 // Show/hide opponent input
 opponentType.addEventListener("change", () => {
@@ -69,14 +70,25 @@ startBtn.addEventListener("click", () => {
 // Reset Board
 function resetBoard(){
   boardState.fill("");
-  cells.forEach(cell => cell.textContent = "");
+  cells.forEach(cell => {
+    cell.textContent = "";
+    cell.disabled = false;
+  });
   turn = "A";
+  gameActive = true;
   updateTurnInfo();
 }
 
 // Update Turn
 function updateTurnInfo(){
   turnInfo.textContent = turn === "A" ? `${playerA}'s turn` : `${playerB}'s turn`;
+  // Disable board if it's computer's turn
+  if(vsComputer && turn==="B"){
+    cells.forEach(c => c.disabled = true);
+    setTimeout(() => computerMove(), 500);
+  } else {
+    cells.forEach(c => c.disabled = false);
+  }
 }
 
 // Check Winner
@@ -96,46 +108,44 @@ function checkWinner(){
   return boardState.includes("") ? null : "Draw";
 }
 
-// Make Move
+// Handle Move
 cells.forEach(cell => {
   cell.addEventListener("click", () => {
     const i = parseInt(cell.dataset.i);
-    if(boardState[i] || (vsComputer && turn==="B")) return;
+    if(!gameActive || boardState[i] || (vsComputer && turn==="B")) return;
 
     boardState[i] = turn==="A" ? symbolA : symbolB;
     cell.textContent = boardState[i];
 
     const winner = checkWinner();
     if(winner){
-      if(winner==="Draw"){
-        messageText.textContent = "It's a Draw!";
-      } else {
-        const winnerName = winner === symbolA ? playerA : playerB;
-        messageText.textContent = `${winnerName} Wins! 🎉`;
-        if(winner===symbolA) scoreA++; else scoreB++;
-        scoreAEl.textContent = scoreA;
-        scoreBEl.textContent = scoreB;
-      }
-      message.classList.remove("hidden");
+      handleWinner(winner);
       return;
     }
 
     // Switch turn
     turn = turn === "A" ? "B" : "A";
     updateTurnInfo();
-
-    // Computer move
-    if(vsComputer && turn==="B"){
-      setTimeout(() => {
-        computerMove();
-        turn = "A";
-        updateTurnInfo();
-      }, 500);
-    }
   });
 });
 
-// Simple AI
+// Handle Winner
+function handleWinner(winner){
+  gameActive = false;
+  if(winner==="Draw"){
+    messageText.textContent = "It's a Draw!";
+  } else {
+    const winnerName = winner === symbolA ? playerA : playerB;
+    messageText.textContent = `${winnerName} Wins! 🎉`;
+    if(winner===symbolA) scoreA++; else scoreB++;
+    scoreAEl.textContent = scoreA;
+    scoreBEl.textContent = scoreB;
+  }
+  message.classList.remove("hidden");
+  cells.forEach(c => c.disabled = true); // disable all cells
+}
+
+// Computer Move
 function computerMove(){
   const empty = boardState.map((v,i)=>v===""?i:null).filter(v=>v!==null);
   const move = empty[Math.floor(Math.random()*empty.length)];
@@ -144,16 +154,10 @@ function computerMove(){
 
   const winner = checkWinner();
   if(winner){
-    if(winner==="Draw"){
-      messageText.textContent = "It's a Draw!";
-    } else {
-      const winnerName = winner === symbolA ? playerA : playerB;
-      messageText.textContent = `${winnerName} Wins! 🎉`;
-      if(winner===symbolA) scoreA++; else scoreB++;
-      scoreAEl.textContent = scoreA;
-      scoreBEl.textContent = scoreB;
-    }
-    message.classList.remove("hidden");
+    handleWinner(winner);
+  } else {
+    turn = "A";
+    updateTurnInfo();
   }
 }
 
@@ -167,6 +171,7 @@ homeBtn.addEventListener("click", ()=>{
   scoreA=0; scoreB=0;
   scoreAEl.textContent=scoreA; scoreBEl.textContent=scoreB;
   message.classList.add("hidden");
+  gameActive = true;
 });
 playAgain.addEventListener("click", ()=>{
   message.classList.add("hidden");
